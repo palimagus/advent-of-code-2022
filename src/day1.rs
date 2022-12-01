@@ -1,53 +1,29 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day1)]
-fn parse_input(input: &str) -> Vec<i32> {
-    // For each line, parse the line into a number
-    // If line is "" (empty), return 0
-    input
-        .lines()
-        .map(|line| line.parse().unwrap_or(0))
-        .collect()
+fn parse_input(input: &str) -> Vec<Vec<u32>> {
+    let mut ret = vec![vec![]];
+    for l in input.lines() {
+        let s = l.trim();
+        match s {
+            "" => ret.push(vec![]),
+            _ => ret.last_mut().unwrap().push(s.parse().unwrap()),
+        }
+    }
+    return ret;
 }
 
 #[aoc(day1, part1)]
-fn solve_part1(input: &[i32]) -> i32 {
-    let mut elves = Vec::new();
-    let mut calories = 0;
-    // For each line, we add the value to the total
-    // If the value is 0 we push the total to the elves
-    // and reset the total
-    for value in input {
-        if *value == 0 {
-            elves.push(calories);
-            calories = 0;
-        } else {
-            calories += value;
-        }
-    }
-    elves.push(calories);
-    *elves.iter().max().unwrap()
+fn solve_part1(input: &[Vec<u32>]) -> u32 {
+    input.iter().map(|e| e.iter().sum()).max().unwrap()
 }
 
 #[aoc(day1, part2)]
-fn solve_part2(input: &[i32]) -> i32 {
-    let mut elves = Vec::new();
-    let mut calories = 0;
-    // For each line, we add the value to the total
-    // If the value is 0 we push the total to the elves
-    // and reset the total
-    for value in input {
-        if *value == 0 {
-            elves.push(calories);
-            calories = 0;
-        } else {
-            calories += value;
-        }
-    }
-    // We sort the elves by calories
+fn solve_part2(input: &[Vec<u32>]) -> u32 {
+    let mut elves = input.iter().map(|e| e.iter().sum()).collect::<Vec<u32>>();
     elves.sort();
-    // Return the sum of the 3 most caloric elves
-    elves[elves.len() - 1] + elves[elves.len() - 2] + elves[elves.len() - 3]
+    elves.reverse();
+    elves[0..3].iter().sum()
 }
 
 #[cfg(test)]
@@ -56,15 +32,39 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input =
-            "1000\n2000\n3000\n\n1000\n2000\n3000\n\n4000\n5000\n6000\n\n7000\n8000\n9000\n\n10000";
+        let input = "1000
+            2000
+            3000
+            
+            4000
+            
+            5000
+            6000
+            
+            7000
+            8000
+            9000
+            
+            10000";
         assert_eq!(solve_part1(&parse_input(input)), 24000);
     }
 
     #[test]
     fn test_part2() {
-        let input =
-            "1000\n2000\n3000\n\n1000\n2000\n3000\n\n4000\n5000\n6000\n\n7000\n8000\n9000\n\n10000";
+        let input = "1000
+            2000
+            3000
+            
+            4000
+            
+            5000
+            6000
+            
+            7000
+            8000
+            9000
+            
+            10000";
         assert_eq!(solve_part2(&parse_input(input)), 45000);
     }
 }
