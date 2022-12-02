@@ -1,7 +1,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day1)]
-fn parse_input(input: &str) -> Vec<Vec<u32>> {
+fn input_generator(input: &str) -> Vec<Vec<u32>> {
     let mut ret = vec![vec![]];
     for l in input.lines() {
         let s = l.trim();
@@ -22,8 +22,7 @@ fn solve_part1(input: &[Vec<u32>]) -> u32 {
 fn solve_part2(input: &[Vec<u32>]) -> u32 {
     let mut elves = input.iter().map(|e| e.iter().sum()).collect::<Vec<u32>>();
     elves.sort();
-    elves.reverse();
-    elves[0..3].iter().sum()
+    elves[elves.len() - 3..].iter().sum()
 }
 
 #[cfg(test)]
@@ -46,7 +45,7 @@ mod tests {
             9000
             
             10000";
-        assert_eq!(solve_part1(&parse_input(input)), 24000);
+        assert_eq!(solve_part1(&input_generator(input)), 24000);
     }
 
     #[test]
@@ -65,6 +64,6 @@ mod tests {
             9000
             
             10000";
-        assert_eq!(solve_part2(&parse_input(input)), 45000);
+        assert_eq!(solve_part2(&input_generator(input)), 45000);
     }
 }
