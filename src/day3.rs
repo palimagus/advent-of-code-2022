@@ -1,5 +1,3 @@
-
-
 use aoc_runner_derive::{aoc};
 
 fn unique_items(s: &str) -> u64 {
