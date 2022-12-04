@@ -1,13 +1,13 @@
-use std::{array, ops::ControlFlow};
+
 
 use aoc_runner_derive::{aoc};
 
 fn unique_items(s: &str) -> u64 {
     s.bytes()
     .map(|b| match b {
-        b'a'..=b'z' =>  1 + b - b'a',
+        b'a'..=b'z' => 1 + b - b'a',
         b'A'..=b'Z' => 27 + b - b'A',
-        _ => unreachable!("Invalid character"),
+        _ => unreachable!("Unexpected byte: {}", b),
     })
     .fold(0, |acc, b| acc | (1u64 << b))
 }
@@ -36,23 +36,13 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = "vJrwpWtwJgWrhcsFMMfFFhFp
-        jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-        PmmdzqPrVvPwwTWBwg
-        wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-        ttgJtRGJQctTZtZT
-        CrZsJsPPZsGzwwsLwLmpwMDw";
+        let input = "vJrwpWtwJgWrhcsFMMfFFhFp\njqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\nPmmdzqPrVvPwwTWBwg\nwMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\nttgJtRGJQctTZtZT\nCrZsJsPPZsGzwwsLwLmpwMDw";
         assert_eq!(solve_part1(input), 157);
     }
 
     #[test]
     fn test_part2() {
-        let input = "vJrwpWtwJgWrhcsFMMfFFhFp
-        jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-        PmmdzqPrVvPwwTWBwg
-        wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-        ttgJtRGJQctTZtZT
-        CrZsJsPPZsGzwwsLwLmpwMDw";
+        let input = "vJrwpWtwJgWrhcsFMMfFFhFp\njqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\nPmmdzqPrVvPwwTWBwg\nwMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\nttgJtRGJQctTZtZT\nCrZsJsPPZsGzwwsLwLmpwMDw";
         assert_eq!(solve_part2(input), 70);
     }
 }
