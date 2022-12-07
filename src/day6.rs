@@ -63,7 +63,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_day6_part1() {
+    fn test_part1() {
         assert_eq!(solve_day6_part1("bvwbjplbgvbhsrlpgdmjqwftvncz"), 5);
         assert_eq!(solve_day6_part1("nppdvjthqldpwncqszvftbrmjlhg"), 6);
         assert_eq!(solve_day6_part1("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"), 10);
@@ -71,7 +71,7 @@ mod tests {
     }
 
     #[test]
-    fn test_day6_part2() {
+    fn test_part2() {
         assert_eq!(solve_day6_part2("mjqjpqmgbljsphdztnvjfqwrcgsmlb"), 19);
         assert_eq!(solve_day6_part2("bvwbjplbgvbhsrlpgdmjqwftvncz"), 23);
         assert_eq!(solve_day6_part2("nppdvjthqldpwncqszvftbrmjlhg"), 23);
