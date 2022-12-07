@@ -9,12 +9,9 @@ struct ShipCommand {
 
 impl ShipCommand {
     fn new(movement: (usize, usize), n_crates: usize) -> Self {
-        Self {
-            movement,
-            n_crates,
-        }
+        Self { movement, n_crates }
     }
-    
+
     fn get_command(&self) -> (usize, usize, usize) {
         (self.movement.0, self.movement.1, self.n_crates)
     }
@@ -25,7 +22,6 @@ impl ShipCommand {
             n_crates: self.n_crates,
         }
     }
-
 }
 struct Ship {
     piles: HashMap<usize, Vec<char>>,
@@ -34,7 +30,7 @@ struct Ship {
 }
 
 impl Ship {
-    fn new () -> Ship {
+    fn new() -> Ship {
         Ship {
             piles: HashMap::new(),
             commands: vec![],
@@ -60,14 +56,18 @@ impl Ship {
 
     fn modelize_line(&mut self, line: &str) {
         for (i, c) in line.chars().enumerate() {
-            if i == 0 { self.cursor = 0 }
-            if i % 4 == 1 { self.cursor += 1 }
+            if i == 0 {
+                self.cursor = 0
+            }
+            if i % 4 == 1 {
+                self.cursor += 1
+            }
             match c {
-                'A'..='Z' => { 
+                'A'..='Z' => {
                     // Make a crate
                     self.piles.entry(self.cursor).or_insert(vec![]).push(c);
-                },
-                _ => continue
+                }
+                _ => continue,
             }
         }
     }
@@ -78,14 +78,12 @@ impl Ship {
         // The second number is the pile to move from
         // The third number is the pile to move to
         // Parse command line to a ShipCommand
-        
+
         let words: Vec<&str> = line.split_whitespace().collect();
-        self.commands.push(
-            ShipCommand::new(
-                (words[3].parse().unwrap(), words[5].parse().unwrap()),
-                words[1].parse().unwrap()
-            )
-        );
+        self.commands.push(ShipCommand::new(
+            (words[3].parse().unwrap(), words[5].parse().unwrap()),
+            words[1].parse().unwrap(),
+        ));
     }
 
     fn reorder_piles(&mut self) {
@@ -167,7 +165,6 @@ impl Ship {
         }
         ret
     }
-
 }
 
 #[aoc_generator(day5)]
@@ -193,7 +190,6 @@ fn solve_part1(input: &Ship) -> String {
     let mut ship = input.clone_ship();
     ship.reorder_piles();
     ship.execute_commands();
-    ship.print_piles("Final state of ship");
     ship.get_crates_on_top()
 }
 
@@ -202,7 +198,6 @@ fn solve_part2(input: &Ship) -> String {
     let mut ship = input.clone_ship();
     ship.reorder_piles();
     ship.execute_commands_sticky();
-    ship.print_piles("Final state of ship");
     ship.get_crates_on_top()
 }
 

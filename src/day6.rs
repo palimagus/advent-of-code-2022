@@ -1,4 +1,4 @@
-use aoc_runner_derive::{aoc};
+use aoc_runner_derive::aoc;
 
 struct ElfDevice {
     buffer: Vec<char>,
@@ -6,32 +6,28 @@ struct ElfDevice {
 
 impl ElfDevice {
     fn new() -> Self {
-        Self {
-            buffer: vec![],
-        }
+        Self { buffer: vec![] }
     }
 
     fn find_marker(&mut self, sequence: &str, marker_length: usize) -> usize {
         // Reset buffer to empty
         self.buffer.clear();
         let mut ret = 0;
-        
-        println!("Looking for sequence: {}", sequence);
+
         for (i, c) in sequence.chars().enumerate() {
             // Is c in the buffer?
             if self.buffer.contains(&c) {
                 // Yes, remove all entries from start of buffer to c
-                self.buffer.drain(..=self.buffer.iter().position(|&x| x == c).unwrap());
+                self.buffer
+                    .drain(..=self.buffer.iter().position(|&x| x == c).unwrap());
                 // Then push c onto the end of the buffer
                 self.buffer.push(c);
-                
             } else {
                 // No, then is the buffer full?
                 if self.buffer.len() == marker_length - 1 {
                     // Yes, we have a packet!
                     ret = i + 1;
                     break;
-                    
                 } else {
                     // No, then push c onto the end of the buffer
                     self.buffer.push(c);
@@ -40,7 +36,6 @@ impl ElfDevice {
         }
         ret
     }
-    
 }
 
 #[aoc(day6, part1)]
