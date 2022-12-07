@@ -1,91 +1,118 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
-type Node = (String, usize);
-struct ElfDeviceFileSystem {
-    memory: HashMap<String, Node>,
-    cursor: String,
+struct File {
+    name: String,
+    size: usize,
 }
 
-impl ElfDeviceFileSystem {
+struct Directory {
+    name: String,
+    files: Vec<File>,
+    directories: Vec<Directory>,
+}
+
+struct FileSystem {
+    pwd: String,
+    tree: HashMap<String, Directory>,
+}
+
+impl FileSystem {
     fn new() -> Self {
-        let mut memory = HashMap::new();
-        let cursor = "/";
-        memory.insert(cursor.to_string(), ("/".to_string(), 0 as usize));
-
         Self {
-            memory,
-            cursor: cursor.to_string(),
+            pwd: "".to_string(),
+            tree: HashMap::new(),
         }
     }
-    fn print_system(&self) {
-        // Order the memory by key (from shortest to longest)
-        let mut memory = self.memory.clone();
-        let mut keys = memory.keys().collect::<Vec<&String>>();
-        keys.sort_by(|a, b| a.len().cmp(&b.len()));
-
-        // Print the memory
-        for key in keys {
-            let (name, size) = memory.get(key).unwrap();
-            println!("{}\t{}", key, size);
+    fn print(&self) {
+        println!("pwd: {}", self.pwd);
+        for (key, value) in &self.tree {
+            println!("{}: {}", key, value.name);
         }
     }
-    fn change_directory(&mut self, directory: &str) {
-        // Print the current directory
-        println!("cd {}", directory);
-
-        // Change the cursor
-        if directory == "/" {
-            self.cursor = "/".to_string();
-        } else if directory == ".." {
-            // Remove the last directory from the cursor
-            let mut cursor = self.cursor.split("/").collect::<Vec<&str>>();
-            cursor.pop();
-            self.cursor = cursor.join("");
-        } else {
-            // Add the directory to the cursor
-            self.cursor = format!("{}{}/", self.cursor, directory);
+    fn ls(&self) {
+        println!("ls {}", self.pwd);
+        self.print();
+        // Get directory from pwd
+        let dir = self.tree.get(&self.pwd).unwrap();
+        // Print all files
+        for file in &dir.files {
+            println!("file {}", file.name);
+        }
+        // Print all directories
+        for dir in &dir.directories {
+            println!("dir {}", dir.name);
         }
     }
-}
-
-#[aoc_generator(day7)]
-fn input_generator(input: &str) -> ElfDeviceFileSystem {
-    let mut elf_device = ElfDeviceFileSystem::new();
-    for line in input.lines() {
-        let mut tokens = line.split_whitespace();
-
-        let command = tokens.next().unwrap();
-        match command {
-            "$" => match tokens.next().unwrap() {
-                "cd" => {
-                    elf_device.change_directory(tokens.next().unwrap());
-                }
-                _ => (),
-            },
-            "dir" => {
-                let name = tokens.next().unwrap();
-                elf_device.memory.insert(
-                    format!("{}/{}/", elf_device.cursor, name),
-                    (name.to_string(), 0 as usize),
-                );
+    fn cd(&mut self, path: &str) {
+        // If path doesn't exists make an empty directory
+        println!("cd {}", path);
+        match path {
+            "/" => {
+                self.pwd = "/".to_string();
+            }
+            ".." => {
+                let mut path = self.pwd.clone();
+                path.pop();
+                self.pwd = path;
             }
             _ => {
-                let size = command.parse::<usize>().unwrap();
-                let name = tokens.next().unwrap();
-                elf_device.memory.insert(
-                    format!("{}{}", elf_device.cursor, name),
-                    (name.to_string(), size),
-                );
+                self.pwd.push_str(path);
             }
         }
+        // Make directory if it doesn't exist
+        if !self.tree.contains_key(&self.pwd) {
+            self.mkdir(path);
+        }
     }
-    elf_device.print_system();
-    elf_device
+    fn mkdir(&mut self, name: &str) {
+        self.tree.insert(
+            name.to_string(),
+            Directory {
+                name: name.to_string(),
+                files: vec![],
+                directories: vec![],
+            },
+        );
+    }
+}
+
+use aoc_runner_derive::{aoc, aoc_generator};
+
+#[aoc_generator(day7)]
+fn input_generator(input: &str) -> Vec<String> {
+    input.lines().map(|l| l.to_string()).collect()
 }
 
 #[aoc(day7, part1)]
-fn solve_day7_part1(input: &ElfDeviceFileSystem) -> usize {
-    0
+fn solve_part1(input: &[String]) -> usize {
+    let mut fs = FileSystem::new();
+    for line in input {
+        let mut parts = line.split_whitespace();
+        let cmd = parts.next().unwrap();
+        match cmd {
+            "$" => match parts.next().unwrap() {
+                "cd" => {
+                    let path = parts.next().unwrap();
+                    fs.cd(path);
+                }
+                "ls" => fs.ls(),
+                _ => {}
+            },
+            "dir" => {
+                let name = parts.next().unwrap();
+                fs.mkdir(name);
+            }
+            _ => {
+                let size = cmd.parse::<usize>().unwrap();
+                let name = parts.next().unwrap();
+                fs.tree.get_mut(&fs.pwd).unwrap().files.push(File {
+                    name: name.to_string(),
+                    size,
+                });
+            }
+        }
+    }
+    fs.tree.len()
 }
 
 #[cfg(test)]
@@ -117,6 +144,6 @@ $ ls
 8033020 d.log
 5626152 d.ext
 7214296 k";
-        assert_eq!(solve_day7_part1(&input_generator(input)), 95437);
+        assert_eq!(solve_part1(&input_generator(input)), 95437);
     }
 }
