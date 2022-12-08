@@ -1,118 +1,107 @@
-use std::{collections::HashMap, fmt::format};
+use std::collections::HashMap;
 
 struct File {
     name: String,
-    size: usize,
+    size: u32,
 }
-
 struct Directory {
     name: String,
     files: Vec<File>,
-    directories: Vec<Directory>,
+    subdirs: Vec<Directory>,
 }
 
 struct FileSystem {
-    pwd: String,
+    pwd: Vec<String>,
     tree: HashMap<String, Directory>,
 }
 
 impl FileSystem {
-    fn new() -> Self {
-        Self {
-            pwd: "".to_string(),
-            tree: HashMap::new(),
-        }
-    }
-    fn print(&self) {
-        println!("pwd: {}", self.pwd);
-        for (key, value) in &self.tree {
-            println!("{}: {}", key, value.name);
-        }
-    }
-    fn ls(&self) {
-        println!("ls {}", self.pwd);
-        self.print();
-        // Get directory from pwd
-        let dir = self.tree.get(&self.pwd).unwrap();
-        // Print all files
-        for file in &dir.files {
-            println!("file {}", file.name);
-        }
-        // Print all directories
-        for dir in &dir.directories {
-            println!("dir {}", dir.name);
-        }
-    }
-    fn cd(&mut self, path: &str) {
-        // If path doesn't exists make an empty directory
-        println!("cd {}", path);
-        match path {
-            "/" => {
-                self.pwd = "/".to_string();
-            }
-            ".." => {
-                let mut path = self.pwd.clone();
-                path.pop();
-                self.pwd = path;
-            }
-            _ => {
-                self.pwd.push_str(path);
-            }
-        }
-        // Make directory if it doesn't exist
-        if !self.tree.contains_key(&self.pwd) {
-            self.mkdir(path);
-        }
-    }
-    fn mkdir(&mut self, name: &str) {
-        self.tree.insert(
-            name.to_string(),
+    fn new() -> FileSystem {
+        let pwd = vec![String::from("/")];
+        let mut tree = HashMap::new();
+        tree.insert(
+            String::from("/"),
             Directory {
-                name: name.to_string(),
-                files: vec![],
-                directories: vec![],
+                name: String::from("/"),
+                files: Vec::new(),
+                subdirs: Vec::new(),
             },
         );
+        FileSystem { pwd, tree }
     }
+    fn change_directory(&mut self, path: &str) {
+        match path {
+            ".." => {
+                self.pwd.pop();
+            }
+            "/" => {
+                self.pwd = vec![String::from("/")];
+            }
+            _ => {
+                self.pwd.push(String::from(path));
+            }
+        }
+    }
+    fn get_size_of_directory(&self, path: &str) -> u32 {
+        let mut size = 0;
+        let dir = self.tree.get(path).unwrap();
+        for file in &dir.files {
+            size += file.size;
+        }
+        for subdir in &dir.subdirs {
+            size += self.get_size_of_directory(&subdir.name);
+        }
+        size
+    }
+    fn mkdir(&mut self, folder: Directory) {}
+    fn touch(&mut self, file: File) {}
 }
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day7)]
-fn input_generator(input: &str) -> Vec<String> {
-    input.lines().map(|l| l.to_string()).collect()
-}
-
-#[aoc(day7, part1)]
-fn solve_part1(input: &[String]) -> usize {
+fn input_generator(input: &str) -> FileSystem {
     let mut fs = FileSystem::new();
-    for line in input {
-        let mut parts = line.split_whitespace();
-        let cmd = parts.next().unwrap();
-        match cmd {
-            "$" => match parts.next().unwrap() {
-                "cd" => {
-                    let path = parts.next().unwrap();
-                    fs.cd(path);
-                }
-                "ls" => fs.ls(),
-                _ => {}
-            },
-            "dir" => {
-                let name = parts.next().unwrap();
-                fs.mkdir(name);
+    for line in input.lines() {
+        match &line[0..4] {
+            "$ cd" => {
+                fs.change_directory(&line[5..]);
+            }
+            "$ ls" => {}
+            "dir " => {
+                fs.mkdir(Directory {
+                    name: String::from(&line[4..]),
+                    files: Vec::new(),
+                    subdirs: Vec::new(),
+                });
             }
             _ => {
-                let size = cmd.parse::<usize>().unwrap();
+                let mut parts = line.split_whitespace();
+                let size = parts.next().unwrap().parse::<u32>().unwrap();
                 let name = parts.next().unwrap();
-                fs.tree.get_mut(&fs.pwd).unwrap().files.push(File {
-                    name: name.to_string(),
+                fs.touch(File {
+                    name: String::from(name),
                     size,
                 });
             }
         }
     }
-    fs.tree.len()
+    fs
+}
+
+#[aoc(day7, part1)]
+fn solve_part1(fs: &FileSystem) -> u32 {
+    let mut directory_sizes = HashMap::new();
+    for (path, dir) in &fs.tree {
+        directory_sizes.insert(path, fs.get_size_of_directory(path));
+    }
+
+    // Get the directories that are less than 100000 total size and sum their sizes
+    directory_sizes
+        .iter()
+        .filter(|(_, size)| **size < 100000)
+        .map(|(_, size)| *size)
+        .sum()
 }
 
 #[cfg(test)]
